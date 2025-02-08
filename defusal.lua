@@ -10,7 +10,6 @@ local RagSec = RageTab:NewSection("Rage")
 local highlights = {}
 
 VisSec:NewButton("Add highlight to all player", "", function()
-    -- Clear existing highlights
     for _, highlight in pairs(highlights) do
         highlight:Destroy()
     end
@@ -21,8 +20,8 @@ VisSec:NewButton("Add highlight to all player", "", function()
         if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local highlight = Instance.new("Highlight")
             highlight.Adornee = player.Character
-            highlight.FillColor = Color3.new(1, 0, 0) -- Red color
-            highlight.OutlineColor = Color3.new(1, 1, 1) -- White color
+            highlight.FillColor = Color3.new(1, 0, 0)
+            highlight.OutlineColor = Color3.new(1, 1, 1)
             highlight.FillTransparency = 0.5
             highlight.Parent = game.Workspace.Camera
             table.insert(highlights, highlight)
@@ -31,7 +30,6 @@ VisSec:NewButton("Add highlight to all player", "", function()
 end)
 
 VisSec:NewButton("Clear", "", function()
-    -- Clear all highlights
     for _, highlight in pairs(highlights) do
         highlight:Destroy()
     end
@@ -46,21 +44,19 @@ local raycastConnection
 
 RagSec:NewToggle("Inf Jump", "", function(state)
     if state then
-        -- Enable infinite jump
         infJumpConnection = runService.Heartbeat:Connect(function()
             if player.Character and player.Character:FindFirstChild("Humanoid") then
                 player.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics, false)
-                player.Character.Humanoid.JumpPower = 150 -- Increase jump power
+                player.Character.Humanoid.JumpPower = 150
                 player.Character.Humanoid.UseJumpPower = true
             end
         end)
     else
-        -- Disable infinite jump
         if infJumpConnection then
             infJumpConnection:Disconnect()
         end
         if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = 150 -- Reset jump power to default
+            player.Character.Humanoid.JumpPower = 150
             player.Character.Humanoid.UseJumpPower = false
         end
     end
