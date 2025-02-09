@@ -61,7 +61,7 @@ RagSec:NewToggle("Inf Jump", "", function(state)
         end
     end
 end)
-RagSec:NewToggle("Inf Jump", "", function(state)
+RagSec:NewToggle("tp to me(local)", "", function(state)
     if state then
             tpToMeConnection = runService.Heartbeat:Connect(function()
                     local localPlayerPosition = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position
