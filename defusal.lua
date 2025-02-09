@@ -61,4 +61,20 @@ RagSec:NewToggle("Inf Jump", "", function(state)
         end
     end
 end)
-
+RagSec:NewToggle("Inf Jump", "", function(state)
+    if state then
+            tpToMeConnection = runService.Heartbeat:Connect(function()
+                    local localPlayerPosition = player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character.HumanoidRootPart.Position
+                    if localPlayerPosition then 
+                        for _, targetPlayer in pairs(game.Players:GetPlayers()) do
+                            if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then 
+                                targetPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(localPlayerPosition) end
+                        end            
+                    end        
+                end)    
+        else       
+            if tpToMeConnection then        
+                tpToMeConnection:Disconnect()        
+            end    
+        end
+end)
