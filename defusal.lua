@@ -1,14 +1,73 @@
-local library = loadstring(game:HttpGetAsync("https://raw.githubusercontent.com/NoDollManB/gui/refs/heads/main/lib.lua"))()
+if game.PlaceId == 79393329652220 then
 
-local Main = library:CreateWindow("Defusal By DollManB", "Crimson")
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local tab = Main:CreateTab("ESP")
-local tab2 = Main:CreateTab("Aimbot")
-local tab3 = Main:CreateTab("Rofls")
-local tab4 = Main:CreateTab("Misc")
+local Window = Rayfield:CreateWindow({
+   Name = "DollShot || ✂️Defusal FPS💣[TESTING]",
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   LoadingTitle = "DollStudio",
+   LoadingSubtitle = "by DollManB",
+   Theme = "Serenity", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+
+   DisableRayfieldPrompts = false,
+   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = nil, -- Create a custom folder for your hub/game
+      FileName = ""
+   },
+
+   Discord = {
+      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
+      Invite = "https://discord.gg/pP4J7D9X", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+   },
+
+   KeySystem = true, -- Set this to true to use our key system
+   KeySettings = {
+      Title = "Defusal | Key",
+      Subtitle = "https://discord.gg/pP4J7D9X",
+      Note = "Log in to my discord server to find out the key", -- Use this to tell the user how to get a key
+      FileName = "dollmanb_5114323", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+      GrabKeyFromSite = true, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+      Key = {"https://pastebin.com/raw/XygxtFnN"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+   }
+})
+
+local MainTab = Window:CreateTab("ESP", nil)
+local AimBotTab = Window:CreateTab("AimBot", nil)
+local PlayerTab = Window:CreateTab("Player", nil)
+local RageTab = Window:CreateTab("Rage", nil)
+local SkinsTab = Window:CreateTab("Skins", nil)
+local MainSection = MainTab:CreateSection("Main")
+local MainSection = AimBotTab:CreateSection("Main")
+local MainSection = PlayerTab:CreateSection("Main")
+local MainSection = RageTab:CreateSection("Main")
+local MainSection = SkinsTab:CreateSection("Main")
 
 local boxESPEnabled = false
 local boxes = {}
+local healthESPEnabled = false
+local aimbotEnabled = false
+local drawCircleEnabled = false
+local circleScale = 50
+local circle = Drawing.new("Circle")
+local aimbotTarget = nil
+local spinBotEnabled = false
+local spinBotConnection = nil
+local speedHackEnabled = false
+local hackedSpeed = 60
+local normalSpeed = 20
+local tpToMeConnection = nil
+local speedHackConnection = nil
+local godModeEnabled = false
+
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local savedPosition = nil
 
 local function createBox(character)
     local box = Drawing.new("Square")
@@ -17,13 +76,13 @@ local function createBox(character)
     box.Thickness = 2
     box.Filled = false
     box.Parent = game.Workspace.Camera
-    box.Character = character -- Store reference to character
+    box.Character = character
 
     local function updateBox()
         if character and character:FindFirstChild("HumanoidRootPart") then
             local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(character.HumanoidRootPart.Position)
             if onScreen then
-                local size = 2000 / vector.Z -- Scale the box size based on distance
+                local size = 2000 / vector.Z
                 box.Size = Vector2.new(size, size)
                 box.Position = Vector2.new(vector.X - size / 2, vector.Y - size / 2)
                 box.Visible = true
@@ -35,7 +94,7 @@ local function createBox(character)
         end
     end
 
-    game:GetService("RunService").RenderStepped:Connect(updateBox)
+    RunService.RenderStepped:Connect(updateBox)
     table.insert(boxes, box)
 end
 
@@ -48,125 +107,6 @@ local function removeBox(character)
         end
     end
 end
-
-tab:CreateToggle("Enable Box ESP", function(state)
-    boxESPEnabled = state
-    if boxESPEnabled then
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                createBox(player.Character)
-            end
-        end
-    else
-        for _, box in pairs(boxes) do
-            box:Remove()
-        end
-        boxes = {}
-    end
-end)
-
-local aimbotEnabled = false
-local drawCircleEnabled = false
-local aimbotTarget = nil
-local circle = Drawing.new("Circle")
-local circleScale = 50
-
-local speedHackEnabled = false
-local hackedSpeed = 60
-local normalSpeed = 20
-
-tab2:CreateCheckbox("Enable Aimbot", function(state)
-    aimbotEnabled = state
-end)
-
-local tpToMeConnection = nil
-
-tab4:CreateCheckbox("Tp To me (local)", function(state)
-    if state then
-        tpToMeConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            local localPlayerPosition = game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and game.Players.LocalPlayer.Character.HumanoidRootPart.Position
-            if localPlayerPosition then
-                for _, targetPlayer in pairs(game.Players:GetPlayers()) do
-                    if targetPlayer ~= game.Players.LocalPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                        targetPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(localPlayerPosition)
-                    end
-                end
-            end
-        end)
-    else
-        if tpToMeConnection then
-            tpToMeConnection:Disconnect()
-            tpToMeConnection = nil
-        end
-    end
-end)
-
-tab2:CreateCheckbox("Enable Drawing Aimbot Circle", function(state)
-    drawCircleEnabled = state
-    circle.Visible = state
-end)
-
-tab2:CreateSlider("Size Aimbot Circle", 5, 40, function(value)
-    circleScale = value * 10 -- Scale the circle size
-    circle.Radius = circleScale
-end)
-
-local spinBotEnabled = false
-local spinBotConnection = nil
-
-tab3:CreateToggle("SpinBot", function(state)
-    spinBotEnabled = state
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-    if spinBotEnabled then
-        spinBotConnection = game:GetService("RunService").Stepped:Connect(function()
-            if spinBotEnabled then
-                humanoidRootPart.RotVelocity = Vector3.new(0, 10, 0) -- Spin speed
-            end
-        end)
-    else
-        if spinBotConnection then
-            spinBotConnection:Disconnect()
-            spinBotConnection = nil
-        end
-        humanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
-    end
-end)
-
-tab4:CreateToggle("Speed Hack", function(state)
-    speedHackEnabled = state
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
-
-    local function updateSpeed()
-        if speedHackEnabled and humanoid then
-            humanoid.WalkSpeed = hackedSpeed
-        else
-            humanoid.WalkSpeed = normalSpeed
-        end
-    end
-
-    if speedHackEnabled then
-        game:GetService("RunService").Heartbeat:Connect(updateSpeed)
-    else
-        humanoid.WalkSpeed = normalSpeed
-    end
-end)
-
-circle.Visible = false
-circle.Color = Color3.fromRGB(255, 0, 230) -- Color for the circle
-circle.Thickness = 2
-circle.Radius = circleScale
-circle.Filled = false -- Make the circle hollow
-
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
 
 local function onPlayerAdded(newPlayer)
     local character = newPlayer.Character or newPlayer.CharacterAdded:Wait()
@@ -187,14 +127,263 @@ local function onPlayerRemoving(player)
     end
 end
 
-for _, player in ipairs(Players:GetPlayers()) do
-    if player ~= Players.LocalPlayer then
+for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+    if player ~= game:GetService("Players").LocalPlayer then
         onPlayerAdded(player)
     end
 end
 
-Players.PlayerAdded:Connect(onPlayerAdded)
-Players.PlayerRemoving:Connect(onPlayerRemoving)
+game:GetService("Players").PlayerAdded:Connect(onPlayerAdded)
+game:GetService("Players").PlayerRemoving:Connect(onPlayerRemoving)
+
+local Button = MainTab:CreateButton({
+   Name = "Esp",
+   Callback = function()
+       boxESPEnabled = not boxESPEnabled
+       if boxESPEnabled then
+           for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+               if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                   createBox(player.Character)
+               end
+           end
+       else
+           for _, box in pairs(boxes) do
+               box:Remove()
+           end
+           boxes = {}
+       end
+   end,
+})
+
+local Aimbot = AimBotTab:CreateToggle({
+   Name = "Aimbot",
+   CurrentValue = false,
+   Flag = "aim",
+   Callback = function(Value)
+       aimbotEnabled = Value
+   end,
+})
+
+local DrawCircle = AimBotTab:CreateToggle({
+   Name = "Draw Aimbot Circle",
+   CurrentValue = false,
+   Flag = "draw_circle",
+   Callback = function(Value)
+       drawCircleEnabled = Value
+       circle.Visible = Value
+   end,
+})
+
+local CircleSize = AimBotTab:CreateSlider({
+   Name = "Aimbot Circle Size",
+   Range = {5, 40},
+   Increment = 1,
+   Suffix = "Size",
+   CurrentValue = 5,
+   Flag = "circle_size",
+   Callback = function(Value)
+       circleScale = Value * 10
+       circle.Radius = circleScale
+   end,
+})
+
+local FlyUpButton = PlayerTab:CreateButton({
+    Name = "Fly Up 5m",
+    Callback = function()
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+        if humanoidRootPart then
+            humanoidRootPart.CFrame = humanoidRootPart.CFrame + Vector3.new(0, 20, 0)
+        end
+    end,
+ })
+
+local SpinBot = PlayerTab:CreateToggle({
+   Name = "SpinBot",
+   CurrentValue = false,
+   Flag = "spinbot",
+   Callback = function(Value)
+       spinBotEnabled = Value
+       local player = game:GetService("Players").LocalPlayer
+       local character = player.Character or player.CharacterAdded:Wait()
+       local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+       if spinBotEnabled then
+           spinBotConnection = RunService.Stepped:Connect(function()
+               if spinBotEnabled then
+                   humanoidRootPart.RotVelocity = Vector3.new(0, 150, 0)
+               end
+           end)
+       else
+           if spinBotConnection then
+               spinBotConnection:Disconnect()
+               spinBotConnection = nil
+           end
+           humanoidRootPart.RotVelocity = Vector3.new(0, 0, 0)
+       end
+   end,
+})
+
+local SpeedHack = PlayerTab:CreateToggle({
+   Name = "Speed Hack",
+   CurrentValue = false,
+   Flag = "speed_hack",
+   Callback = function(Value)
+       speedHackEnabled = Value
+       local player = game:GetService("Players").LocalPlayer
+       local character = player.Character or player.CharacterAdded:Wait()
+       local humanoid = character:WaitForChild("Humanoid")
+
+       if speedHackEnabled then
+           speedHackConnection = game:GetService("RunService").Stepped:Connect(function()
+               if speedHackEnabled then
+                   humanoid.WalkSpeed = hackedSpeed
+               end
+           end)
+       else
+           if speedHackConnection then
+               speedHackConnection:Disconnect()
+               speedHackConnection = nil
+           end
+           humanoid.WalkSpeed = normalSpeed
+       end
+   end,
+})
+
+local TpToMe = RageTab:CreateToggle({
+   Name = "Tp To Me",
+   CurrentValue = false,
+   Flag = "tp_to_me",
+   Callback = function(Value)
+       if Value then
+           tpToMeConnection = RunService.Heartbeat:Connect(function()
+               local localPlayerPosition = game:GetService("Players").LocalPlayer.Character and game:GetService("Players").LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.Position
+               if localPlayerPosition then
+                   for _, targetPlayer in pairs(game:GetService("Players"):GetPlayers()) do
+                       if targetPlayer ~= game:GetService("Players").LocalPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                           targetPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(localPlayerPosition)
+                       end
+                   end
+               end
+           end)
+       else
+           if tpToMeConnection then
+               tpToMeConnection:Disconnect()
+               tpToMeConnection = nil
+           end
+       end
+   end,
+})
+
+local SavePositionButton = PlayerTab:CreateButton({
+    Name = "Save Position",
+    Callback = function()
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+        if humanoidRootPart then
+            savedPosition = humanoidRootPart.Position
+        end
+    end,
+ })
+
+ local TeleportToSavedButton = PlayerTab:CreateButton({
+    Name = "Teleport to Saved",
+    Callback = function()
+        local player = game:GetService("Players").LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+        if humanoidRootPart and savedPosition then
+            humanoidRootPart.CFrame = CFrame.new(savedPosition)
+        else
+
+        end
+    end,
+ })
+
+ local RainbowHands = SkinsTab:CreateToggle({
+    Name = "Rainbow Hands",
+    CurrentValue = false,
+    Flag = "rainbow_hands",
+    Callback = function(Value)
+        local rainbowHandsEnabled = Value
+        local colors = {
+            Color3.fromRGB(255, 0, 0),
+            Color3.fromRGB(255, 127, 0),
+            Color3.fromRGB(255, 255, 0),
+            Color3.fromRGB(0, 255, 0),
+            Color3.fromRGB(0, 0, 255),
+            Color3.fromRGB(75, 0, 130),
+            Color3.fromRGB(148, 0, 211)
+        }
+
+        local colorIndex = 1
+        local colorChangeInterval = 0.2
+
+        local function changeColor()
+            if rainbowHandsEnabled then
+                local leftArm = workspace.Camera:FindFirstChild("Arms") and workspace.Camera.Arms:FindFirstChild("CSSArms") and workspace.Camera.Arms.CSSArms:FindFirstChild("Left Arm")
+                local rightArm = workspace.Camera:FindFirstChild("Arms") and workspace.Camera.Arms:FindFirstChild("CSSArms") and workspace.Camera.Arms.CSSArms:FindFirstChild("Right Arm")
+
+                if leftArm and rightArm then
+                    colorIndex = colorIndex % #colors + 1
+                    local currentColor = colors[colorIndex]
+                    leftArm.Color = currentColor
+                    rightArm.Color = currentColor
+                end
+            end
+        end
+
+        if rainbowHandsEnabled then
+            game:GetService("RunService").Heartbeat:Connect(function(deltaTime)
+                colorChangeInterval = colorChangeInterval - deltaTime
+                if colorChangeInterval <= 0 then
+                    changeColor()
+                    colorChangeInterval = colorChangeSpeed
+                end
+            end)
+        else
+            -- Reset to default color when disabled
+            local leftArm = workspace.Camera:FindFirstChild("Arms") and workspace.Camera.Arms:FindFirstChild("CSSArms") and workspace.Camera.Arms.CSSArms:FindFirstChild("Left Arm")
+            local rightArm = workspace.Camera:FindFirstChild("Arms") and workspace.Camera.Arms:FindFirstChild("CSSArms") and workspace.Camera.Arms.CSSArms:FindFirstChild("Right Arm")
+            if leftArm and rightArm then
+                leftArm.Color = Color3.new(1, 1, 1) -- Assuming default is white
+                rightArm.Color = Color3.new(1, 1, 1)
+            end
+        end
+    end,
+})
+
+local ColorChangeSpeedSlider = SkinsTab:CreateSlider({
+    Name = "Color Change Speed",
+    Range = {0.1, 2},
+    Increment = 0.1,
+    Suffix = "Seconds",
+    CurrentValue = 0.1,
+    Flag = "color_change_speed",
+    Callback = function(Value)
+        colorChangeSpeed = Value
+    end,
+})
+
+
+
+circle.Visible = false
+circle.Color = Color3.fromRGB(255, 0, 230)
+circle.Thickness = 2
+circle.Radius = circleScale
+circle.Filled = false
+
+local UserInputService = game:GetService("UserInputService")
+local camera = workspace.CurrentCamera
+
+local function onTargetDied()
+    aimbotTarget = nil
+end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
@@ -203,8 +392,8 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
         local shortestDistance = math.huge
         local mouseLocation = UserInputService:GetMouseLocation()
 
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= Players.LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        for _, player in ipairs(game:GetService("Players"):GetPlayers()) do
+            if player ~= game:GetService("Players").LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 local screenPos, onScreen = camera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
                 if onScreen then
                     local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(mouseLocation.X, mouseLocation.Y)).Magnitude
@@ -218,6 +407,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 
         if closestPlayer then
             aimbotTarget = closestPlayer.Character.Head
+            closestPlayer.Character.Humanoid.Died:Connect(onTargetDied)
         end
     end
 end)
@@ -230,8 +420,20 @@ UserInputService.InputEnded:Connect(function(input, gameProcessed)
 end)
 
 RunService.RenderStepped:Connect(function()
-    if aimbotTarget then
-        camera.CFrame = CFrame.new(camera.CFrame.Position, aimbotTarget.Position)
+    if aimbotTarget and aimbotTarget.Parent and aimbotTarget.Parent:FindFirstChild("Humanoid") and aimbotTarget.Parent.Humanoid.Health > 0 then
+        local screenPos, onScreen = camera:WorldToViewportPoint(aimbotTarget.Position)
+        if onScreen then
+            local distance = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)).Magnitude
+            if distance < circle.Radius then
+                camera.CFrame = CFrame.new(camera.CFrame.Position, aimbotTarget.Position)
+            else
+                aimbotTarget = nil
+            end
+        else
+            aimbotTarget = nil
+        end
+    else
+        aimbotTarget = nil
     end
 
     if drawCircleEnabled then
@@ -239,4 +441,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-tab:Show()
+end
