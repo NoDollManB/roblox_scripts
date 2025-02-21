@@ -164,15 +164,6 @@ local Window = Rayfield:CreateWindow({
        end,
     })
     
-    local SilentAim = LegitTab:CreateToggle({
-       Name = "Silent Aim",
-       CurrentValue = false,
-       Flag = "silent_aim",
-       Callback = function(Value)
-           silentAimEnabled = Value
-       end,
-    })
-    
     local DrawCircle = LegitTab:CreateToggle({
        Name = "Draw Aimbot Circle",
        CurrentValue = false,
